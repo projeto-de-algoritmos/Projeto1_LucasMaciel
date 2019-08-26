@@ -16,13 +16,10 @@ class Node(object):
         return values
 
 
-def teste():
-    print("merda")
-
-
 class Graph(object):
     def __init__(self, node_array: list):
         self.graph = node_array
+        self.object = []
 
     def create_nodes(self, values=[]):
         nodes = []
