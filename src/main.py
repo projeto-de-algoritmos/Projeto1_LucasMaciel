@@ -1,12 +1,12 @@
-from graph import Graph, Node
-import draw_screen
 import random
 import sys
+from graph import Graph, Node
+from draw_screen import Screen
 
 running = True
 
 
-def make_nodes(screen: draw_screen.Screen, nodes: list):
+def make_nodes(screen: Screen, nodes: list):
     for node in nodes:
         node_aux = screen.create_node()
         node.color = node_aux.color
@@ -15,7 +15,7 @@ def make_nodes(screen: draw_screen.Screen, nodes: list):
         node.posY = node_aux.posY
 
 
-def make_edges(screen: draw_screen.Screen, graph: Graph, node, nodes: list):
+def make_edges(screen: Screen, graph: Graph, node, nodes: list):
     graph.create_relationship(node, nodes)
     for node_edge in nodes:
         screen.add_edge(node, node_edge)
@@ -24,7 +24,7 @@ def make_edges(screen: draw_screen.Screen, graph: Graph, node, nodes: list):
 def main():
     global running
     graph = Graph()
-    screen = draw_screen.Screen(graph)
+    screen = Screen(graph)
     values = [1, 2, 3, 4, 5, 6]
     nodes = []
 

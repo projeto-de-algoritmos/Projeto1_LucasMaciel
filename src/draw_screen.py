@@ -21,35 +21,29 @@ class Screen(object):
         self.graph = graph
         self.nodes = []
         self.edges = []
-        self.node_width = 20
-        self.node_height = 20
+        self.node_radius = 20
 
     def start(self):
         pygame.init()
         screen.fill(WHITE)
 
     def create_node(self):
-        index = 0
         posX = random.randint(0, SCREEN_WIDTH - 20)
         posY = random.randint(0, SCREEN_HEIGHT - 20)
+
         node = type('', (), {})()
-        node.body = pygame.rect.Rect(
-            (posX, posY, self.node_width, self.node_height))
         node.color = colors[random.randint(0, len(colors) - 1)]
-        node.index = index
+        node.index = len(self.nodes)
         node.posX = posX
         node.posY = posY
         self.nodes.append(node)
-        index += 1
         return node
 
     def add_edge(self, node1, node2):
         # create edge of a node
-        center_width = self.node_width/2
-        center_height = self.node_height/2
         edge = type('', (), {})()
-        edge.start = (node1.posX + center_width, node1.posY + center_height)
-        edge.end = (node2.posX + center_width, node2.posY + center_height)
+        edge.start = (node1.posX, node1.posY)
+        edge.end = (node2.posX, node2.posY)
         self.edges.append(edge)
 
     def refresh(self):
@@ -66,7 +60,8 @@ class Screen(object):
             pygame.draw.line(screen, BLACK, edge.start, edge.end, 2)
         # Draw Nodes
         for node in self.nodes:
-            pygame.draw.rect(screen, node.color, node.body)
+            pygame.draw.circle(screen, node.color,
+                               (node.posX, node.posY), self.node_radius)
         pygame.display.update()
 
     def keysListener(self):
