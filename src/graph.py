@@ -17,7 +17,7 @@ class Node(object):
 
 
 class Graph(object):
-    def __init__(self, node_array: list):
+    def __init__(self, node_array: list = []):
         self.graph = node_array
         self.object = []
 

@@ -19,23 +19,40 @@ clock = pygame.time.Clock()
 class Screen(object):
     def __init__(self, graph: Graph):
         self.graph = graph
-        self.board = []
+        self.nodes = []
+        self.edges = []
+        self.node_width = 20
+        self.node_height = 20
 
     def start(self):
         pygame.init()
-        self.create_node()
+        screen.fill(WHITE)
 
     def create_node(self):
         index = 0
-        block = type('', (), {})()
-        block.body = pygame.rect.Rect((0, 0, 20, 20))
-        block.color = colors[random.randint(0, len(colors) - 1)]
-        block.index = index
-        self.board.append(block)
+        posX = random.randint(0, SCREEN_WIDTH - 20)
+        posY = random.randint(0, SCREEN_HEIGHT - 20)
+        node = type('', (), {})()
+        node.body = pygame.rect.Rect(
+            (posX, posY, self.node_width, self.node_height))
+        node.color = colors[random.randint(0, len(colors) - 1)]
+        node.index = index
+        node.posX = posX
+        node.posY = posY
+        self.nodes.append(node)
         index += 1
+        return node
+
+    def add_edge(self, node1, node2):
+        # create edge of a node
+        center_width = self.node_width/2
+        center_height = self.node_height/2
+        edge = type('', (), {})()
+        edge.start = (node1.posX + center_width, node1.posY + center_height)
+        edge.end = (node2.posX + center_width, node2.posY + center_height)
+        self.edges.append(edge)
 
     def refresh(self):
-        screen.fill(WHITE)
 
         if pygame.mouse.get_pressed()[0]:
             # if left button is clicked
@@ -44,8 +61,12 @@ class Screen(object):
         self.draw()
 
     def draw(self):
-        for block in self.board:
-            pygame.draw.rect(screen, block.color, block.body)
+        # Draw edges
+        for edge in self.edges:
+            pygame.draw.line(screen, BLACK, edge.start, edge.end, 2)
+        # Draw Nodes
+        for node in self.nodes:
+            pygame.draw.rect(screen, node.color, node.body)
         pygame.display.update()
 
     def keysListener(self):
