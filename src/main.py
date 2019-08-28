@@ -1,7 +1,7 @@
 import random
 import sys
-from graph import Graph, Node
-from draw_screen import Screen
+from modules.graph import Graph, Node
+from modules.draw_screen import Screen
 
 running = True
 

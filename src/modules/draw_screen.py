@@ -4,13 +4,14 @@ import math
 import time
 import random
 from math import cos, sin
-from graph import Graph
+from modules.graph import Graph
 
 SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 480
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
+YELLOW = (255, 166, 0)
 WHITE = (255, 255, 255)
 colors = [RED, GREEN, BLACK]
 
@@ -31,8 +32,10 @@ class Screen(object):
         screen.fill(WHITE)
 
     def create_node(self):
-        posX = random.randint(0, SCREEN_WIDTH - 20)
-        posY = random.randint(0, SCREEN_HEIGHT - 20)
+        posX = random.randint(
+            self.node_radius, SCREEN_WIDTH - self.node_radius)
+        posY = random.randint(
+            self.node_radius, SCREEN_HEIGHT - self.node_radius)
 
         node = type('', (), {})()
         node.color = colors[random.randint(0, len(colors) - 1)]
@@ -49,14 +52,6 @@ class Screen(object):
         edge.end = (node2.posX, node2.posY)
         self.edges.append(edge)
 
-    def refresh(self):
-
-        if pygame.mouse.get_pressed()[0]:
-            # if left button is clicked
-            position = pygame.mouse.get_pos()
-            self.selectBlock(position)
-        self.draw()
-
     def draw(self):
         # Draw edges
         for edge in self.edges:
@@ -68,8 +63,28 @@ class Screen(object):
                 screen, node.posX, node.posY, self.node_radius, node.color)
         pygame.display.update()
 
+    def paint_node(self, node):
+        node.color = YELLOW
+
+    def selectNode(self, position):
+        psx = position[0]
+        psy = position[1]
+        radius = self.node_radius
+        for node in self.nodes:
+            if (psx > node.posX - radius and psx < node.posX + radius and psy > node.posY - radius and psy < node.posY + radius):
+                self.paint_node(node)
+                break
+
     def keysListener(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
+    def refresh(self):
+
+        if pygame.mouse.get_pressed()[0]:
+            # if left button is clicked
+            position = pygame.mouse.get_pos()
+            self.selectNode(position)
+        self.draw()
