@@ -1,6 +1,9 @@
 import pygame
+import pygame.gfxdraw
+import math
 import time
 import random
+from math import cos, sin
 from graph import Graph
 
 SCREEN_WIDTH = 720
@@ -57,11 +60,12 @@ class Screen(object):
     def draw(self):
         # Draw edges
         for edge in self.edges:
-            pygame.draw.line(screen, BLACK, edge.start, edge.end, 2)
+            pygame.gfxdraw.line(
+                screen, edge.start[0], edge.start[1], edge.end[0], edge.end[1], BLACK)
         # Draw Nodes
         for node in self.nodes:
-            pygame.draw.circle(screen, node.color,
-                               (node.posX, node.posY), self.node_radius)
+            pygame.gfxdraw.filled_circle(
+                screen, node.posX, node.posY, self.node_radius, node.color)
         pygame.display.update()
 
     def keysListener(self):
