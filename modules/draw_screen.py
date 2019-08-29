@@ -39,15 +39,13 @@ class Screen(object):
             self.node_radius, SCREEN_HEIGHT - self.node_radius)
 
         node.color = colors[random.randint(0, len(colors) - 1)]
-        node.index = len(self.nodes)
         node.posX = posX
         node.posY = posY
         self.nodes.append(node)
         return node
 
-    def add_edge(self, node1, node2):
+    def add_edge(self, node1, node2, edge):
         # create edge of a node
-        edge = type('', (), {})()
         edge.start = (node1.posX, node1.posY)
         edge.end = (node2.posX, node2.posY)
         self.edges.append(edge)
@@ -56,7 +54,7 @@ class Screen(object):
         # Draw edges
         for edge in self.edges:
             pygame.gfxdraw.line(
-                screen, edge.start[0], edge.start[1], edge.end[0], edge.end[1], BLACK)
+                screen, edge.start[0], edge.start[1], edge.end[0], edge.end[1], edge.color)
         # Draw Nodes
         for node in self.nodes:
             pygame.gfxdraw.filled_circle(
@@ -76,7 +74,8 @@ class Screen(object):
             print(node.value, end=", ")
         print()
         if len(self.enqueue_nodes) >= 2:
-            self.graph.breadth_search(self, self.nodes[0], self.nodes[1])
+            self.graph.breadth_search(
+                self, self.enqueue_nodes[0], self.enqueue_nodes[1])
             self.enqueue_nodes = []
 
     def selected_node(self, position):
