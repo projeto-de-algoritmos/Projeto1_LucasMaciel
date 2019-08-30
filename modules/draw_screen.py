@@ -9,11 +9,12 @@ from modules.graph import Graph
 SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 480
 RED = (255, 0, 0)
+BLUE = (0, 0, 250)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 YELLOW = (255, 166, 0)
 WHITE = (255, 255, 255)
-colors = [RED, GREEN, BLACK]
+colors = [RED, BLUE, BLACK]
 
 pygame.display.set_caption("Graph")
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))

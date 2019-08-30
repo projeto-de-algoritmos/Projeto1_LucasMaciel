@@ -75,22 +75,44 @@ class Graph(object):
 
     def make_edge_screen(self, screen, node1, node2):
         edge = Edge()
-        # print(edge.value)
         screen.add_edge(node1, node2, edge)
         return edge
 
     def change_color_edge(self, edge):
         '''
-            Função para alterar a cor de uma edge
+            Funcao para alterar a cor de uma edge no graph original
         '''
         edge_select = self.edges[edge.value]
         edge_select.color = YELLOW
+
+    def paint_track_edges(self, child_node):
+        '''
+            Funcao para pintar o caminho do node filho ate o node pai,
+            utilizando a arvore gerada pela breadth_search
+        '''
+        if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
+            self.change_color_edge(child_node.parent.edge)
+            self.paint_track_edges(child_node.parent.node)
+
+    def add_child_tree(self, parent_node, child_node, edge):
+        '''
+            arvore temporaria para salvar o melhor caminho do initial_node para end_node
+        '''
+        print(parent_node.value, ' -> ', child_node.value)
+        parent_node.childs.append(child_node)
+        # child_node.parent = parent_node
+        child_node.parent.edge = edge
+        child_node.parent.node = parent_node
 
     def breadth_search(self, screen, initial_node: Node, end_node: Node):
         queue = []
         distance = 0
 
         def enqueue(node):
+            node.visited = True
+            # atributos para usar na arovore temporaria
+            node.childs = []
+            node.parent = type('', (), {})()
             queue.append(node)
 
         def dequeue():
@@ -99,29 +121,26 @@ class Graph(object):
         # realiza uma copia, para nao afetar a variavel original
         node = deepcopy(initial_node)
 
-        # realiza busca em largura dos nos alcancaveis a partir do no principal
+        # realiza busca em largura dos nodes alcancaveis a partir do node principal
         enqueue(node)
-        node.visited = True
 
         while len(queue) > 0:
             current_node = dequeue()
             if current_node.value == initial_node.value:
-                print("PAINT %d #################################################" % (
-                    current_node.value))
                 screen.paint_node(initial_node, (0, 255, 0))
             if current_node.value == end_node.value:
-                print("PAINT %d #################################################" % (
-                    current_node.value))
                 screen.paint_node(end_node, (0, 255, 0))
-                print(current_node.visited)
+                print('end node: ', current_node.value)
+                print('parent of end node: ', current_node.parent.node.value)
+                self.paint_track_edges(current_node)
                 break
 
             for neighbor in current_node.neighbors:
                 if not hasattr(neighbor.node, 'visited') or neighbor.node.visited == False:
-                    neighbor.node.visited = True
                     enqueue(neighbor.node)
-                    # alterar cor no grafo original
-                    self.change_color_edge(neighbor.edge)
+                    # adiciona nodes vizinhos como filhos do node da camada anterior
+                    self.add_child_tree(
+                        current_node, neighbor.node, neighbor.edge)
 
         def automatic_generation(self, qtt_neighbors: int):
-            max_neighbors = len(self.graph)*(len(self.graph) - 1) / 2
+            max_edges = len(self.graph)*(len(self.graph) - 1) / 2

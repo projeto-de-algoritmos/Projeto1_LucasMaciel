@@ -13,15 +13,13 @@ def main():
     values = [1, 2, 3, 4, 5, 6]
     nodes = []
 
-    print(Edge.index)
-
     screen.start()
     running = True
 
     nodes = graph.create_nodes(screen, values)
-    graph.create_relationship(screen, nodes[0], nodes[1:6])
+    graph.create_relationship(screen, nodes[0], nodes[1:5])
+    graph.create_relationship(screen, nodes[3], [nodes[5]])
 
-    print(Edge.index)
     while running:
         screen.keys_listener()
         screen.refresh()
