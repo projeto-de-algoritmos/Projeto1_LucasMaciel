@@ -3,10 +3,15 @@ import random
 
 BLACK = (0, 0, 0)
 YELLOW = (255, 166, 0)
+LIGHT_BLUE = (40, 120, 250)
+GREEN = (0, 255, 0)
 
 
 class Edge(object):
     index = 0
+    color_no_path_tracking = BLACK
+    color_path_tracking = LIGHT_BLUE
+    color_path_tracked = YELLOW
 
     def __init__(self):
         self.start = (0, 0)
@@ -18,6 +23,8 @@ class Edge(object):
 
 class Node(object):
     indexes_used = []
+    color_path_tracking = LIGHT_BLUE
+    color_path_tracked = GREEN
 
     def __init__(self, value):
         try:
@@ -30,8 +37,18 @@ class Node(object):
             exit()
         self.neighbors = []
         self.color = None
+        self.__original_color = None
         self.posX = None
         self.posY = None
+
+    @property
+    def original_color(self):
+        return self.__original_color
+
+    @original_color.setter
+    def original_color(self, new_color):
+        self.__original_color = new_color
+        self.color = self.__original_color
 
     def add_neighbor(self, node, edge):
         neighbor = type('', (), {})()
@@ -79,12 +96,12 @@ class Graph(object):
         screen.add_edge(node1, node2, edge)
         return edge
 
-    def __change_color_edge(self, edge):
+    def __change_color_edge(self, edge, color):
         '''
             Funcao para alterar a cor de uma edge no graph original
         '''
         edge_select = self.edges[edge.value]
-        edge_select.color = YELLOW
+        edge_select.color = color
 
     def __paint_track_edges(self, child_node):
         '''
@@ -92,7 +109,8 @@ class Graph(object):
             utilizando a arvore gerada pela breadth_search
         '''
         if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
-            self.__change_color_edge(child_node.parent.edge)
+            self.__change_color_edge(
+                child_node.parent.edge, child_node.parent.edge.color_path_tracked)
             self.__paint_track_edges(child_node.parent.node)
 
     def __add_child_tree(self, parent_node, child_node, edge):
@@ -128,8 +146,9 @@ class Graph(object):
             current_node = dequeue()
             # if current_node.value == initial_node.value:
             if current_node.value == end_node.value:
-                screen.paint_node(initial_node, (0, 255, 0))
-                screen.paint_node(end_node, (0, 255, 0))
+                screen.paint_node(
+                    initial_node, Node.color_path_tracked)
+                screen.paint_node(end_node, Node.color_path_tracked)
                 self.__paint_track_edges(current_node)
                 break
 

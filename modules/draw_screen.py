@@ -4,7 +4,7 @@ import math
 import time
 import random
 from math import cos, sin
-from modules.graph import Graph
+from modules.graph import Graph, Node, Edge
 
 SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 480
@@ -14,6 +14,8 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 YELLOW = (255, 166, 0)
 WHITE = (255, 255, 255)
+LIGHT_GRAY = (200, 200, 200)
+DARK_GRAY = (50, 50, 50)
 colors = [RED, BLUE, BLACK]
 
 pygame.display.set_caption("Graph")
@@ -33,7 +35,7 @@ class Screen(object):
 
     def start(self):
         pygame.init()
-        screen.fill(WHITE)
+        screen.fill(LIGHT_GRAY)
 
     def __set_positions(self):
         ''''
@@ -60,8 +62,8 @@ class Screen(object):
         self.array_nodes_posY.append(posY)
         return (posX, posY)
 
-    def create_node(self, node):
-        node.color = colors[random.randint(0, len(colors) - 1)]
+    def create_node(self, node: Node):
+        node.original_color = colors[random.randint(0, len(colors) - 1)]
         node.posX, node.posY = self.__set_positions()
 
         self.nodes.append(node)
@@ -77,8 +79,10 @@ class Screen(object):
     def __draw(self):
         # Draw edges
         for edge in self.edges:
-            pygame.gfxdraw.line(
-                screen, edge.start[0], edge.start[1], edge.end[0], edge.end[1], edge.color)
+            pygame.draw.line(
+                screen, edge.color, (edge.start), (edge.end), 3)
+            # pygame.gfxdraw.line(
+            #     screen, edge.start[0], edge.start[1], edge.end[0], edge.end[1], edge.color)
         # Draw Nodes
         for node in self.nodes:
             pygame.gfxdraw.filled_circle(
@@ -88,10 +92,22 @@ class Screen(object):
     def paint_node(self, node, color=YELLOW):
         node.color = color
 
+    def clear_path(self):
+        '''
+            apagar caminho da busca anterior
+        '''
+        for (edge, node) in zip(self.edges, self.nodes):
+            edge.color = Edge.color_no_path_tracking
+            node.color = node.original_color
+
     def cache_enqueue_selected_nodes(self, node):
         '''
             Enqueue until two nodes before activate breadth_search between nodes
         '''
+        if len(self.enqueue_nodes) == 0:
+            self.clear_path()
+            self.paint_node(node)
+
         if len(self.enqueue_nodes) == 0 or self.enqueue_nodes[0] != node:
             self.enqueue_nodes.append(node)
         for node in self.enqueue_nodes:
@@ -108,7 +124,6 @@ class Screen(object):
         radius = self.node_radius
         for node in self.nodes:
             if (psx > node.posX - radius and psx < node.posX + radius and psy > node.posY - radius and psy < node.posY + radius):
-                self.paint_node(node)
                 self.cache_enqueue_selected_nodes(node)
                 break
 
