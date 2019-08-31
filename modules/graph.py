@@ -1,4 +1,5 @@
 from copy import deepcopy
+import random
 
 BLACK = (0, 0, 0)
 YELLOW = (255, 166, 0)
@@ -24,7 +25,7 @@ class Node(object):
                 raise AttributeError
             self.value = value
             Node.indexes_used.append(value)
-        except:
+        except AttributeError:
             print('value node (%d) already used' % (value))
             exit()
         self.neighbors = []
@@ -66,39 +67,38 @@ class Graph(object):
         neighbors = nodes
 
         for neighbor in neighbors:
-            edge = self.make_edge_screen(screen, node, neighbor)
+            edge = self.__make_edge_screen(screen, node, neighbor)
             node.add_neighbor(neighbor, edge)
             neighbor.add_neighbor(node, edge)
             self.edges.append(edge)
 
         return neighbors
 
-    def make_edge_screen(self, screen, node1, node2):
+    def __make_edge_screen(self, screen, node1, node2):
         edge = Edge()
         screen.add_edge(node1, node2, edge)
         return edge
 
-    def change_color_edge(self, edge):
+    def __change_color_edge(self, edge):
         '''
             Funcao para alterar a cor de uma edge no graph original
         '''
         edge_select = self.edges[edge.value]
         edge_select.color = YELLOW
 
-    def paint_track_edges(self, child_node):
+    def __paint_track_edges(self, child_node):
         '''
             Funcao para pintar o caminho do node filho ate o node pai,
             utilizando a arvore gerada pela breadth_search
         '''
         if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
-            self.change_color_edge(child_node.parent.edge)
-            self.paint_track_edges(child_node.parent.node)
+            self.__change_color_edge(child_node.parent.edge)
+            self.__paint_track_edges(child_node.parent.node)
 
-    def add_child_tree(self, parent_node, child_node, edge):
+    def __add_child_tree(self, parent_node, child_node, edge):
         '''
             arvore temporaria para salvar o melhor caminho do initial_node para end_node
         '''
-        print(parent_node.value, ' -> ', child_node.value)
         parent_node.childs.append(child_node)
         # child_node.parent = parent_node
         child_node.parent.edge = edge
@@ -126,21 +126,72 @@ class Graph(object):
 
         while len(queue) > 0:
             current_node = dequeue()
-            if current_node.value == initial_node.value:
-                screen.paint_node(initial_node, (0, 255, 0))
+            # if current_node.value == initial_node.value:
             if current_node.value == end_node.value:
+                screen.paint_node(initial_node, (0, 255, 0))
                 screen.paint_node(end_node, (0, 255, 0))
-                print('end node: ', current_node.value)
-                print('parent of end node: ', current_node.parent.node.value)
-                self.paint_track_edges(current_node)
+                self.__paint_track_edges(current_node)
                 break
 
             for neighbor in current_node.neighbors:
                 if not hasattr(neighbor.node, 'visited') or neighbor.node.visited == False:
                     enqueue(neighbor.node)
                     # adiciona nodes vizinhos como filhos do node da camada anterior
-                    self.add_child_tree(
+                    self.__add_child_tree(
                         current_node, neighbor.node, neighbor.edge)
+            if len(queue) == 0:
+                print('Impossivel ligar os dois nodes')
 
-        def automatic_generation(self, qtt_neighbors: int):
-            max_edges = len(self.graph)*(len(self.graph) - 1) / 2
+    def __return_random_nodes(self, node, qtt_edges_remainder):
+        '''
+            Retorna uma lista de nodes aleatoriamente
+        '''
+        max_neighbors = len(self.nodes) - 1
+        max_size = max_neighbors if max_neighbors < qtt_edges_remainder else qtt_edges_remainder
+        size_list = random.randint(0, max_size)
+        array_nodes = []
+        print(node.value, ' -> [', end='')
+        for n in range(size_list):
+            while True:
+                # node escolhido da lista nao pode ser ele mesmo e nem ser repetido
+                node_picked = self.nodes[random.randint(
+                    0, len(self.nodes) - 1)]
+                if node_picked != node and node_picked not in (array_nodes):
+                    break
+
+            print(node_picked.value, ', ', end='')
+            array_nodes.append(node_picked)
+        print(']')
+        return array_nodes
+
+    def __automatic_generation_edges(self, screen, nodes: list, qtt_edges):
+        qtt_edges_remainder = qtt_edges
+        qtt_nodes = len(nodes)
+        index_node = 0
+        while qtt_edges_remainder > 0:
+            node = nodes[index_node]
+            neighbors = self.__return_random_nodes(node, qtt_edges_remainder)
+            qtt_edges_remainder -= len(neighbors)
+            self.create_relationship(screen, node, neighbors)
+            index_node = (index_node + 1) % (qtt_nodes)
+
+    def automatic_generation_graph(self, screen, qtt_nodes: int, qtt_edges: int):
+        max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
+        try:
+            if qtt_edges > max_edges:
+                raise AttributeError
+
+            values = []
+            nodes = []
+            for n in range(qtt_nodes):
+                values.append(n)
+
+            nodes = self.create_nodes(screen, values)
+            self.__automatic_generation_edges(screen, nodes, qtt_edges)
+
+        except AttributeError:
+            print('qtt edges is bigger than max edges possible')
+            exit()
+
+    def __test(self):
+        print('test')
