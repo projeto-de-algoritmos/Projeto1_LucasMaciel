@@ -1,10 +1,9 @@
 from copy import deepcopy
 import random
+from modules.config import *
 
-BLACK = (0, 0, 0)
-YELLOW = (255, 166, 0)
-LIGHT_BLUE = (40, 120, 250)
-GREEN = (0, 255, 0)
+
+colors = [RED, BLUE, BLACK]
 
 
 class Edge(object):
@@ -25,6 +24,7 @@ class Node(object):
     indexes_used = []
     color_path_tracking = LIGHT_BLUE
     color_path_tracked = GREEN
+    node_radius = 20
 
     def __init__(self, value):
         try:
@@ -67,6 +67,33 @@ class Graph(object):
     def __init__(self):
         self.nodes = []
         self.edges = []
+        self.array_nodes_posX = []
+        self.array_nodes_posY = []
+
+    def __set_positions(self):
+        ''''
+            add positions preventing colisions
+        '''
+        min_distance = Node.node_radius * 3
+        posValid = False
+        while posValid != True:
+            posX = random.randint(
+                Node.node_radius, SCREEN_WIDTH - Node.node_radius)
+            posY = random.randint(
+                Node.node_radius, SCREEN_HEIGHT - Node.node_radius)
+
+            # verify positions
+            invalid = False
+            for (pX, pY) in zip(self.array_nodes_posX, self.array_nodes_posY):
+                if abs(pX - posX) < min_distance and abs(pY - posY) < min_distance:
+                    invalid = True
+                    break
+            if invalid == False:
+                posValid = True
+        # add occupied positions
+        self.array_nodes_posX.append(posX)
+        self.array_nodes_posY.append(posY)
+        return (posX, posY)
 
     def create_nodes(self, screen, values=[]):
         nodes = []
@@ -78,6 +105,8 @@ class Graph(object):
 
     def make_nodes_screen(self, screen, nodes: list):
         for node in nodes:
+            node.original_color = colors[random.randint(0, len(colors) - 1)]
+            node.posX, node.posY = self.__set_positions()
             node_aux = screen.create_node(node)
 
     def create_relationship(self, screen, node, nodes: list):
@@ -93,6 +122,8 @@ class Graph(object):
 
     def __make_edge_screen(self, screen, node1, node2):
         edge = Edge()
+        edge.start = (node1.posX, node1.posY)
+        edge.end = (node2.posX, node2.posY)
         screen.add_edge(node1, node2, edge)
         return edge
 
@@ -199,7 +230,8 @@ class Graph(object):
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
         try:
             if qtt_edges > max_edges:
-                raise AttributeError
+                print(qtt_edges, ' -> ', max_edges)
+                raise ValueError
 
             values = []
             nodes = []
@@ -209,7 +241,7 @@ class Graph(object):
             nodes = self.create_nodes(screen, values)
             self.__automatic_generation_edges(screen, nodes, qtt_edges)
 
-        except AttributeError:
+        except ValueError:
             print('qtt edges is bigger than max edges possible')
             exit()
 

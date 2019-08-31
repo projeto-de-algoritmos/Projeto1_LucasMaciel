@@ -7,12 +7,13 @@ running = True
 
 def main():
     global running
+    screen = Screen()
     graph = Graph()
-    screen = Screen(graph)
     values = [1, 2, 3, 4, 5, 6]
     nodes = []
 
     screen.start()
+    screen.selected_search_node = graph.breadth_search
     running = True
 
 #     nodes = graph.create_nodes(screen, values)
