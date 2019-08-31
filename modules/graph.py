@@ -176,6 +176,7 @@ class Graph(object):
             index_node = (index_node + 1) % (qtt_nodes)
 
     def automatic_generation_graph(self, screen, qtt_nodes: int, qtt_edges: int):
+        print('generating graph #########################')
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
         try:
             if qtt_edges > max_edges:

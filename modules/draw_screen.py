@@ -28,21 +28,44 @@ class Screen(object):
         self.edges = []
         self.node_radius = 20
         self.enqueue_nodes = []
+        self.array_nodes_posX = []
+        self.array_nodes_posY = []
 
     def start(self):
         pygame.init()
         screen.fill(WHITE)
 
-    def create_node(self, node):
-        posX = random.randint(
-            self.node_radius, SCREEN_WIDTH - self.node_radius)
-        posY = random.randint(
-            self.node_radius, SCREEN_HEIGHT - self.node_radius)
+    def __set_positions(self):
+        ''''
+            add positions preventing colisions
+        '''
+        min_distance = self.node_radius * 3
+        posValid = False
+        while posValid != True:
+            posX = random.randint(
+                self.node_radius, SCREEN_WIDTH - self.node_radius)
+            posY = random.randint(
+                self.node_radius, SCREEN_HEIGHT - self.node_radius)
 
+            # verify positions
+            invalid = False
+            for (pX, pY) in zip(self.array_nodes_posX, self.array_nodes_posY):
+                if abs(pX - posX) < min_distance and abs(pY - posY) < min_distance:
+                    invalid = True
+                    break
+            if invalid == False:
+                posValid = True
+        # add occupied positions
+        self.array_nodes_posX.append(posX)
+        self.array_nodes_posY.append(posY)
+        return (posX, posY)
+
+    def create_node(self, node):
         node.color = colors[random.randint(0, len(colors) - 1)]
-        node.posX = posX
-        node.posY = posY
+        node.posX, node.posY = self.__set_positions()
+
         self.nodes.append(node)
+
         return node
 
     def add_edge(self, node1, node2, edge):
@@ -51,7 +74,7 @@ class Screen(object):
         edge.end = (node2.posX, node2.posY)
         self.edges.append(edge)
 
-    def draw(self):
+    def __draw(self):
         # Draw edges
         for edge in self.edges:
             pygame.gfxdraw.line(
@@ -100,4 +123,4 @@ class Screen(object):
                 self.selected_node(position)
 
     def refresh(self):
-        self.draw()
+        self.__draw()
