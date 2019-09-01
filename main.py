@@ -10,11 +10,12 @@ def main():
     screen = Screen()
     graph = Graph(screen)
 
-    screen.start()
+    # start screen and add function to generate graph
+    screen.start(graph.automatic_generation_graph)
     screen.selected_search_node = graph.breadth_search
     running = True
 
-    graph.automatic_generation_graph(10, 20)
+    # graph.automatic_generation_graph(10, 10)
 
     print('path trackings #########################')
     screen.refresh()

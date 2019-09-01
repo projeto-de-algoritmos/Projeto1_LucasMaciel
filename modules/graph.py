@@ -276,7 +276,7 @@ class Graph(object):
         max_size = max_neighbors if max_neighbors < qtt_edges_remainder else qtt_edges_remainder
         size_list = random.randint(0, qtt_average)
         array_nodes = []
-        print(node.value, ' -> [', end='')
+        # print(node.value, ' -> [', end='')
         # neighbors already exists
         neighbor_already = []
         for neighbor in node.neighbors:
@@ -290,9 +290,9 @@ class Graph(object):
                 if node_picked != node and node_picked not in (array_nodes) and node_picked not in neighbor_already:
                     break
 
-            print(node_picked.value, ', ', end='')
+            # print(node_picked.value, ', ', end='')
             array_nodes.append(node_picked)
-        print(']')
+        # print(']')
         return array_nodes
 
     def __automatic_generation_edges(self, nodes: list, qtt_edges):
@@ -309,12 +309,16 @@ class Graph(object):
             index_node = (index_node + 1) % (qtt_nodes)
 
     def automatic_generation_graph(self, qtt_nodes: int, qtt_edges: int):
+        del self.nodes
+        del self.edges
+        self.nodes = []
+        self.edges = []
         print('generating graph #########################')
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
         try:
             if qtt_edges > max_edges:
                 print(qtt_edges, ' -> ', max_edges)
-                raise max_edges
+                # raise max_edges
 
             values = []
             nodes = []
@@ -326,7 +330,6 @@ class Graph(object):
 
         except max_edges:
             print('qtt edges is bigger than max edges possible')
-            exit()
 
     def __test(self):
         print('test')
