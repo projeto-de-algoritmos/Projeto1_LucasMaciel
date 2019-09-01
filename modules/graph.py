@@ -8,14 +8,14 @@ colors = [RED]
 
 class Edge(object):
     index = 0
-    no_path_tracking_color = BLACK
+    no_path_tracking_color = DARK_GRAY
     path_tracking_color = LIGHT_BLUE
     path_tracked_color = YELLOW
 
     def __init__(self):
         self.start = (0, 0)
         self.end = (0, 0)
-        self.color = BLACK
+        self.color = Edge.no_path_tracking_color
         self.value = Edge.index
         Edge.index += 1
 
@@ -97,36 +97,38 @@ class Graph(object):
         self.array_nodes_posY.append(posY)
         return (posX, posY)
 
-    def create_nodes(self, screen, values=[]):
+    def create_nodes(self, values=[]):
         nodes = []
         for value in values:
             nodes.append(Node(value))
-        self.make_nodes_screen(screen, nodes)
+        self.make_nodes_screen(nodes)
         self.nodes.extend(nodes)
         return nodes
 
-    def make_nodes_screen(self, screen, nodes: list):
+    def make_nodes_screen(self, nodes: list):
         for node in nodes:
             node.original_color = colors[random.randint(0, len(colors) - 1)]
             node.posX, node.posY = self.__set_positions()
-            node_aux = screen.create_node(node)
+            node_aux = self.screen.create_node(node)
 
-    def create_relationship(self, screen, node, nodes: list):
+    def create_relationship(self, node, nodes: list):
         neighbors = nodes
 
         for neighbor in neighbors:
-            edge = self.__make_edge_screen(screen, node, neighbor)
+            edge = self.__make_edge_screen(
+                ((node.posX, node.posY)), (neighbor.posX, neighbor.posY))
             node.add_neighbor(neighbor, edge)
             neighbor.add_neighbor(node, edge)
             self.edges.append(edge)
 
         return neighbors
 
-    def __make_edge_screen(self, screen, node1, node2):
+    def __make_edge_screen(self, node1_pos: tuple, node2_pos: tuple, color=Edge.no_path_tracking_color):
         edge = Edge()
-        edge.start = (node1.posX, node1.posY)
-        edge.end = (node2.posX, node2.posY)
-        screen.add_edge(node1, node2, edge)
+        edge.start = node1_pos
+        edge.end = node2_pos
+        edge.color = color
+        self.screen.add_edge(edge)
         return edge
 
     def __change_color_node(self, node, color):
@@ -143,13 +145,13 @@ class Graph(object):
         edge_select = self.edges[edge.value]
         edge_select.color = color
 
-    def __paint_tracked_edges_animation(self, child_node):
+    def __paint_tracked_edges(self, child_node):
         '''
             Funcao para pintar o caminho do node filho ate o node pai,
             utilizando a arvore gerada pela breadth_search
         '''
         if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
-            self.__paint_tracked_edges_animation(child_node.parent.node)
+            self.__paint_tracked_edges(child_node.parent.node)
             self.__change_color_edge(
                 child_node.parent.edge, child_node.parent.edge.path_tracked_color)
             if len(child_node.childs) > 0:
@@ -157,12 +159,57 @@ class Graph(object):
                     child_node, child_node.path_tracked_middle_color)
             self.screen.draw(3)
 
-    def __paint_tracking_edges_animation(self, edge, node):
+    def __tracking_animation(self, start, end):
+        def increase_pos(prev_pos, increase): return prev_pos + increase
+        def decrease_pos(prev_pos, decrease): return prev_pos - decrease
+        # percent of original edge
+        percent_original_edge = 0.05
+        size_temp_edge = 0
+        temp_edge_start = start
+        temp_edge_end = temp_edge_start
+        size_increment_x = abs(
+            end[0] - start[0]) * percent_original_edge
+        size_increment_y = abs(
+            end[1] - start[1]) * percent_original_edge
+
+        increment_posX = None
+        increment_posY = None
+        if end[0] > start[0]:
+            increment_posX = increase_pos
+        else:
+            increment_posX = decrease_pos
+
+        if end[1] > start[1]:
+            increment_posY = increase_pos
+        else:
+            increment_posY = decrease_pos
+
+        temp_edge = self.__make_edge_screen(
+            temp_edge_start, temp_edge_end, Edge.path_tracking_color)
+        # print('edge start original: ', edge.start)
+        # print('edge end original: ', edge.end)
+        # print('edge start temp: ', temp_edge_start)
+        while(abs(end[0] - temp_edge_end[0]) > size_increment_x
+                and abs(end[1] - temp_edge_end[1]) > size_increment_y):
+
+            temp_edge_end = (increment_posX(temp_edge_end[0], size_increment_x),
+                             increment_posY(temp_edge_end[1], size_increment_y))
+            temp_edge.end = temp_edge_end
+            self.screen.draw(16)
+            # print('edge end temp: ', temp_edge_end)
+        self.screen.remove_edge()
+        del temp_edge
+
+    def __paint_tracking_edges(self, edge, node1, node2):
         '''
             Pintar o caminho de busca do node
         '''
+        self.__tracking_animation(
+            (node1.posX, node1.posY), (node2.posX, node2.posY))
+
+        # finally paint original edge
         self.__change_color_edge(edge, edge.path_tracking_color)
-        self.__change_color_node(node, node.path_tracking_color)
+        self.__change_color_node(node2, node2.path_tracking_color)
         self.screen.draw(3)
 
     def __add_child_tree(self, parent_node, child_node, edge):
@@ -174,7 +221,7 @@ class Graph(object):
         child_node.parent.edge = edge
         child_node.parent.node = parent_node
 
-    def breadth_search(self, screen, initial_node: Node, end_node: Node):
+    def breadth_search(self, initial_node: Node, end_node: Node):
         queue = []
         distance = 0
 
@@ -201,7 +248,7 @@ class Graph(object):
                 self.__change_color_node(
                     initial_node, Node.path_tracked_color)
                 self.__change_color_node(end_node, Node.path_tracked_color)
-                self.__paint_tracked_edges_animation(current_node)
+                self.__paint_tracked_edges(current_node)
                 break
 
             for neighbor in current_node.neighbors:
@@ -210,8 +257,8 @@ class Graph(object):
                     # adiciona nodes vizinhos como filhos do node da camada anterior
                     self.__add_child_tree(
                         current_node, neighbor.node, neighbor.edge)
-                    self.__paint_tracking_edges_animation(
-                        neighbor.edge, neighbor.node)
+                    self.__paint_tracking_edges(
+                        neighbor.edge, current_node, neighbor.node)
             if len(queue) == 0:
                 print('Impossivel ligar os dois nodes')
 
@@ -242,7 +289,7 @@ class Graph(object):
         print(']')
         return array_nodes
 
-    def __automatic_generation_edges(self, screen, nodes: list, qtt_edges):
+    def __automatic_generation_edges(self, nodes: list, qtt_edges):
         qtt_edges_remainder = qtt_edges
         qtt_average = int(qtt_edges/len(self.nodes))
         qtt_nodes = len(nodes)
@@ -252,10 +299,10 @@ class Graph(object):
             neighbors = self.__return_random_nodes(
                 node, qtt_average, qtt_edges_remainder)
             qtt_edges_remainder -= len(neighbors)
-            self.create_relationship(screen, node, neighbors)
+            self.create_relationship(node, neighbors)
             index_node = (index_node + 1) % (qtt_nodes)
 
-    def automatic_generation_graph(self, screen, qtt_nodes: int, qtt_edges: int):
+    def automatic_generation_graph(self, qtt_nodes: int, qtt_edges: int):
         print('generating graph #########################')
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
         try:
@@ -268,8 +315,8 @@ class Graph(object):
             for n in range(qtt_nodes):
                 values.append(n)
 
-            nodes = self.create_nodes(screen, values)
-            self.__automatic_generation_edges(screen, nodes, qtt_edges)
+            nodes = self.create_nodes(values)
+            self.__automatic_generation_edges(nodes, qtt_edges)
 
         except max_edges:
             print('qtt edges is bigger than max edges possible')

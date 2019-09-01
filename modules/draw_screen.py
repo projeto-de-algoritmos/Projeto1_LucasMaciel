@@ -19,7 +19,8 @@ class Screen(object):
     def start(self):
         pygame.display.set_caption("Graph")
         pygame.init()
-        self.screen.fill(LIGHT_GRAY)
+        pygame.gfxdraw.filled_circle(
+            self.screen, 100, 100, 50, YELLOW)
 
     def create_node(self, node):
 
@@ -27,11 +28,17 @@ class Screen(object):
 
         return node
 
-    def add_edge(self, node1, node2, edge):
+    def add_edge(self, edge):
         # create edge of a node
         self.edges.append(edge)
 
+    def remove_edge(self):
+        # remove an edge
+        self.edges.pop()
+
     def draw(self, clock_fps=30):
+        # redraw screen
+        self.screen.fill(LIGHT_GRAY)
         # Draw edges
         for edge in self.edges:
             pygame.draw.line(
@@ -40,6 +47,7 @@ class Screen(object):
         for node in self.nodes:
             pygame.gfxdraw.filled_circle(
                 self.screen, node.posX, node.posY, node.node_radius, node.color)
+
         pygame.display.update()
         self.clock.tick(clock_fps)
 
@@ -62,7 +70,8 @@ class Screen(object):
         '''
         if len(self.enqueue_nodes) == 0:
             self.clear_path()
-            self.paint_node_selected(node)
+
+        self.paint_node_selected(node)
 
         if len(self.enqueue_nodes) == 0 or self.enqueue_nodes[0] != node:
             self.enqueue_nodes.append(node)
@@ -71,7 +80,7 @@ class Screen(object):
         print()
         if len(self.enqueue_nodes) >= 2:
             self.selected_search_node(
-                self, self.enqueue_nodes[0], self.enqueue_nodes[1])
+                self.enqueue_nodes[0], self.enqueue_nodes[1])
             self.enqueue_nodes = []
 
     def selected_node(self, position):
