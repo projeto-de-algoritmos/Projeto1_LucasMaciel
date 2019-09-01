@@ -15,7 +15,7 @@ def main():
     screen.selected_search_node = graph.breadth_search
     running = True
 
-    # graph.automatic_generation_graph(10, 10)
+    # graph.automatic_generation_graph(5, 10)
 
     print('path trackings #########################')
     screen.refresh()
