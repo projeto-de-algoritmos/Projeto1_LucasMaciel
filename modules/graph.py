@@ -201,12 +201,17 @@ class Graph(object):
         size_list = random.randint(0, max_size)
         array_nodes = []
         print(node.value, ' -> [', end='')
+        # neighbors already exists
+        neighbor_already = []
+        for neighbor in node.neighbors:
+            neighbor_already.append(neighbor.node)
+
         for n in range(size_list):
             while True:
                 # node escolhido da lista nao pode ser ele mesmo e nem ser repetido
                 node_picked = self.nodes[random.randint(
                     0, len(self.nodes) - 1)]
-                if node_picked != node and node_picked not in (array_nodes):
+                if node_picked != node and node_picked not in (array_nodes) and node_picked not in neighbor_already:
                     break
 
             print(node_picked.value, ', ', end='')

@@ -19,7 +19,7 @@ def main():
 #     nodes = graph.create_nodes(screen, values)
 #     graph.create_relationship(screen, nodes[0], nodes[1:5])
 #     graph.create_relationship(screen, nodes[3], [nodes[5]])
-    graph.automatic_generation_graph(screen, 50, 50)
+    graph.automatic_generation_graph(screen, 20, 22)
 
     print('path trackings #########################')
     while running:
