@@ -9,7 +9,8 @@ from modules.config import *
 
 class Screen(object):
     def __init__(self):
-        self.screen = None
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.clock = pygame.time.Clock()
         self.nodes = []
         self.edges = []
         self.enqueue_nodes = []
@@ -17,8 +18,6 @@ class Screen(object):
 
     def start(self):
         pygame.display.set_caption("Graph")
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        clock = pygame.time.Clock()
         pygame.init()
         self.screen.fill(LIGHT_GRAY)
 
@@ -32,7 +31,7 @@ class Screen(object):
         # create edge of a node
         self.edges.append(edge)
 
-    def __draw(self):
+    def draw(self, clock_fps=30):
         # Draw edges
         for edge in self.edges:
             pygame.draw.line(
@@ -42,16 +41,19 @@ class Screen(object):
             pygame.gfxdraw.filled_circle(
                 self.screen, node.posX, node.posY, node.node_radius, node.color)
         pygame.display.update()
+        self.clock.tick(clock_fps)
 
-    def paint_node(self, node, color=YELLOW):
+    def paint_node_selected(self, node, color=YELLOW):
         node.color = color
 
     def clear_path(self):
         '''
             apagar caminho da busca anterior
         '''
-        for (edge, node) in zip(self.edges, self.nodes):
+        for edge in self.edges:
             edge.color = edge.color_no_path_tracking
+
+        for node in self.nodes:
             node.color = node.original_color
 
     def cache_enqueue_selected_nodes(self, node):
@@ -60,7 +62,7 @@ class Screen(object):
         '''
         if len(self.enqueue_nodes) == 0:
             self.clear_path()
-            self.paint_node(node)
+            self.paint_node_selected(node)
 
         if len(self.enqueue_nodes) == 0 or self.enqueue_nodes[0] != node:
             self.enqueue_nodes.append(node)
@@ -92,4 +94,4 @@ class Screen(object):
                 self.selected_node(position)
 
     def refresh(self):
-        self.__draw()
+        self.draw()

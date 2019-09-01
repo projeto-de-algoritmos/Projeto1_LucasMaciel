@@ -8,7 +8,7 @@ running = True
 def main():
     global running
     screen = Screen()
-    graph = Graph()
+    graph = Graph(screen)
     values = [1, 2, 3, 4, 5, 6]
     nodes = []
 
@@ -19,7 +19,7 @@ def main():
 #     nodes = graph.create_nodes(screen, values)
 #     graph.create_relationship(screen, nodes[0], nodes[1:5])
 #     graph.create_relationship(screen, nodes[3], [nodes[5]])
-    graph.automatic_generation_graph(screen, 20, 22)
+    graph.automatic_generation_graph(screen, 50, 100)
 
     print('path trackings #########################')
     while running:

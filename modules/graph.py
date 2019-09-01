@@ -3,7 +3,7 @@ import random
 from modules.config import *
 
 
-colors = [RED, BLUE, BLACK]
+colors = [RED]
 
 
 class Edge(object):
@@ -64,7 +64,8 @@ class Node(object):
 
 
 class Graph(object):
-    def __init__(self):
+    def __init__(self, screen):
+        self.screen = None
         self.nodes = []
         self.edges = []
         self.array_nodes_posX = []
@@ -127,12 +128,20 @@ class Graph(object):
         screen.add_edge(node1, node2, edge)
         return edge
 
+    def __change_color_node(self, node, color):
+        '''
+            Funcao para alterar a cor de um node no graph original
+        '''
+        node_select = self.nodes[node.value]
+        node_select.color = color
+
     def __change_color_edge(self, edge, color):
         '''
             Funcao para alterar a cor de uma edge no graph original
         '''
         edge_select = self.edges[edge.value]
         edge_select.color = color
+        # self.screen.draw(16)
 
     def __paint_track_edges(self, child_node):
         '''
@@ -140,9 +149,12 @@ class Graph(object):
             utilizando a arvore gerada pela breadth_search
         '''
         if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
+            self.__paint_track_edges(child_node.parent.node)
             self.__change_color_edge(
                 child_node.parent.edge, child_node.parent.edge.color_path_tracked)
-            self.__paint_track_edges(child_node.parent.node)
+            if len(child_node.childs) > 0:
+                self.__change_color_node(
+                    child_node, child_node.color_path_tracking)
 
     def __add_child_tree(self, parent_node, child_node, edge):
         '''
@@ -177,9 +189,9 @@ class Graph(object):
             current_node = dequeue()
             # if current_node.value == initial_node.value:
             if current_node.value == end_node.value:
-                screen.paint_node(
+                self.__change_color_node(
                     initial_node, Node.color_path_tracked)
-                screen.paint_node(end_node, Node.color_path_tracked)
+                self.__change_color_node(end_node, Node.color_path_tracked)
                 self.__paint_track_edges(current_node)
                 break
 
@@ -192,13 +204,13 @@ class Graph(object):
             if len(queue) == 0:
                 print('Impossivel ligar os dois nodes')
 
-    def __return_random_nodes(self, node, qtt_edges_remainder):
+    def __return_random_nodes(self, node, qtt_average, qtt_edges_remainder):
         '''
             Retorna uma lista de nodes aleatoriamente
         '''
         max_neighbors = len(self.nodes) - 1
         max_size = max_neighbors if max_neighbors < qtt_edges_remainder else qtt_edges_remainder
-        size_list = random.randint(0, max_size)
+        size_list = random.randint(0, qtt_average)
         array_nodes = []
         print(node.value, ' -> [', end='')
         # neighbors already exists
@@ -221,11 +233,13 @@ class Graph(object):
 
     def __automatic_generation_edges(self, screen, nodes: list, qtt_edges):
         qtt_edges_remainder = qtt_edges
+        qtt_average = int(qtt_edges/len(self.nodes))
         qtt_nodes = len(nodes)
         index_node = 0
         while qtt_edges_remainder > 0:
             node = nodes[index_node]
-            neighbors = self.__return_random_nodes(node, qtt_edges_remainder)
+            neighbors = self.__return_random_nodes(
+                node, qtt_average, qtt_edges_remainder)
             qtt_edges_remainder -= len(neighbors)
             self.create_relationship(screen, node, neighbors)
             index_node = (index_node + 1) % (qtt_nodes)
@@ -236,7 +250,7 @@ class Graph(object):
         try:
             if qtt_edges > max_edges:
                 print(qtt_edges, ' -> ', max_edges)
-                raise ValueError
+                raise max_edges
 
             values = []
             nodes = []
@@ -246,7 +260,7 @@ class Graph(object):
             nodes = self.create_nodes(screen, values)
             self.__automatic_generation_edges(screen, nodes, qtt_edges)
 
-        except ValueError:
+        except max_edges:
             print('qtt edges is bigger than max edges possible')
             exit()
 
