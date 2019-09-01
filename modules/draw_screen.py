@@ -51,7 +51,7 @@ class Screen(object):
             apagar caminho da busca anterior
         '''
         for edge in self.edges:
-            edge.color = edge.color_no_path_tracking
+            edge.color = edge.no_path_tracking_color
 
         for node in self.nodes:
             node.color = node.original_color

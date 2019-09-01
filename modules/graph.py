@@ -8,9 +8,9 @@ colors = [RED]
 
 class Edge(object):
     index = 0
-    color_no_path_tracking = BLACK
-    color_path_tracking = LIGHT_BLUE
-    color_path_tracked = YELLOW
+    no_path_tracking_color = BLACK
+    path_tracking_color = LIGHT_BLUE
+    path_tracked_color = YELLOW
 
     def __init__(self):
         self.start = (0, 0)
@@ -22,8 +22,9 @@ class Edge(object):
 
 class Node(object):
     indexes_used = []
-    color_path_tracking = LIGHT_BLUE
-    color_path_tracked = GREEN
+    path_tracking_color = LIGHT_BLUE
+    path_tracked_color = GREEN
+    path_tracked_middle_color = YELLOW
     node_radius = 20
 
     def __init__(self, value):
@@ -65,7 +66,7 @@ class Node(object):
 
 class Graph(object):
     def __init__(self, screen):
-        self.screen = None
+        self.screen = screen
         self.nodes = []
         self.edges = []
         self.array_nodes_posX = []
@@ -141,20 +142,28 @@ class Graph(object):
         '''
         edge_select = self.edges[edge.value]
         edge_select.color = color
-        # self.screen.draw(16)
 
-    def __paint_track_edges(self, child_node):
+    def __paint_tracked_edges_animation(self, child_node):
         '''
             Funcao para pintar o caminho do node filho ate o node pai,
             utilizando a arvore gerada pela breadth_search
         '''
         if hasattr(child_node.parent, 'edge') and hasattr(child_node.parent, 'node'):
-            self.__paint_track_edges(child_node.parent.node)
+            self.__paint_tracked_edges_animation(child_node.parent.node)
             self.__change_color_edge(
-                child_node.parent.edge, child_node.parent.edge.color_path_tracked)
+                child_node.parent.edge, child_node.parent.edge.path_tracked_color)
             if len(child_node.childs) > 0:
                 self.__change_color_node(
-                    child_node, child_node.color_path_tracking)
+                    child_node, child_node.path_tracked_middle_color)
+            self.screen.draw(3)
+
+    def __paint_tracking_edges_animation(self, edge, node):
+        '''
+            Pintar o caminho de busca do node
+        '''
+        self.__change_color_edge(edge, edge.path_tracking_color)
+        self.__change_color_node(node, node.path_tracking_color)
+        self.screen.draw(3)
 
     def __add_child_tree(self, parent_node, child_node, edge):
         '''
@@ -190,9 +199,9 @@ class Graph(object):
             # if current_node.value == initial_node.value:
             if current_node.value == end_node.value:
                 self.__change_color_node(
-                    initial_node, Node.color_path_tracked)
-                self.__change_color_node(end_node, Node.color_path_tracked)
-                self.__paint_track_edges(current_node)
+                    initial_node, Node.path_tracked_color)
+                self.__change_color_node(end_node, Node.path_tracked_color)
+                self.__paint_tracked_edges_animation(current_node)
                 break
 
             for neighbor in current_node.neighbors:
@@ -201,6 +210,8 @@ class Graph(object):
                     # adiciona nodes vizinhos como filhos do node da camada anterior
                     self.__add_child_tree(
                         current_node, neighbor.node, neighbor.edge)
+                    self.__paint_tracking_edges_animation(
+                        neighbor.edge, neighbor.node)
             if len(queue) == 0:
                 print('Impossivel ligar os dois nodes')
 
