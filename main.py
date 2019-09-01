@@ -17,9 +17,7 @@ def main():
     graph.automatic_generation_graph(10, 20)
 
     print('path trackings #########################')
-    while running:
-        screen.keys_listener()
-        screen.refresh()
+    screen.refresh()
 
 
 main()

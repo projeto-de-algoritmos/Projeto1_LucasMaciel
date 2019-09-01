@@ -13,8 +13,8 @@ class Edge(object):
     path_tracked_color = YELLOW
 
     def __init__(self):
-        self.start = (0, 0)
-        self.end = (0, 0)
+        self.node_start: Node
+        self.node_end: Node
         self.color = Edge.no_path_tracking_color
         self.value = Edge.index
         Edge.index += 1
@@ -25,7 +25,6 @@ class Node(object):
     path_tracking_color = LIGHT_BLUE
     path_tracked_color = GREEN
     path_tracked_middle_color = YELLOW
-    node_radius = 20
 
     def __init__(self, value):
         try:
@@ -76,18 +75,18 @@ class Graph(object):
         ''''
             add positions preventing colisions
         '''
-        min_distance = Node.node_radius * 3
+        MIN_DISTANCE_BETWEEN_NODES = NODE_RADIUS * 3
         posValid = False
         while posValid != True:
             posX = random.randint(
-                Node.node_radius, SCREEN_WIDTH - Node.node_radius)
+                NODE_RADIUS, SCREEN_WIDTH - NODE_RADIUS)
             posY = random.randint(
-                Node.node_radius, SCREEN_HEIGHT - Node.node_radius)
+                NODE_RADIUS, SCREEN_HEIGHT - NODE_RADIUS)
 
             # verify positions
             invalid = False
             for (pX, pY) in zip(self.array_nodes_posX, self.array_nodes_posY):
-                if abs(pX - posX) < min_distance and abs(pY - posY) < min_distance:
+                if abs(pX - posX) < MIN_DISTANCE_BETWEEN_NODES and abs(pY - posY) < MIN_DISTANCE_BETWEEN_NODES:
                     invalid = True
                     break
             if invalid == False:
@@ -115,18 +114,17 @@ class Graph(object):
         neighbors = nodes
 
         for neighbor in neighbors:
-            edge = self.__make_edge_screen(
-                ((node.posX, node.posY)), (neighbor.posX, neighbor.posY))
+            edge = self.__make_edge_screen(node, neighbor)
             node.add_neighbor(neighbor, edge)
             neighbor.add_neighbor(node, edge)
             self.edges.append(edge)
 
         return neighbors
 
-    def __make_edge_screen(self, node1_pos: tuple, node2_pos: tuple, color=Edge.no_path_tracking_color):
+    def __make_edge_screen(self, node1, node2, color=Edge.no_path_tracking_color):
         edge = Edge()
-        edge.start = node1_pos
-        edge.end = node2_pos
+        edge.node_start = node1
+        edge.node_end = node2
         edge.color = color
         self.screen.add_edge(edge)
         return edge
@@ -159,6 +157,14 @@ class Graph(object):
                     child_node, child_node.path_tracked_middle_color)
             self.screen.draw(3)
 
+    def __make_temp_edge_screen(self, node1_pos: tuple, node2_pos: tuple, color=Edge.no_path_tracking_color):
+        edge = Edge()
+        edge.start = node1_pos
+        edge.end = node2_pos
+        edge.color = color
+        self.screen.add_edge(edge)
+        return edge
+
     def __tracking_animation(self, start, end):
         def increase_pos(prev_pos, increase): return prev_pos + increase
         def decrease_pos(prev_pos, decrease): return prev_pos - decrease
@@ -184,7 +190,7 @@ class Graph(object):
         else:
             increment_posY = decrease_pos
 
-        temp_edge = self.__make_edge_screen(
+        temp_edge = self.__make_temp_edge_screen(
             temp_edge_start, temp_edge_end, Edge.path_tracking_color)
         # print('edge start original: ', edge.start)
         # print('edge end original: ', edge.end)
@@ -204,8 +210,8 @@ class Graph(object):
         '''
             Pintar o caminho de busca do node
         '''
-        self.__tracking_animation(
-            (node1.posX, node1.posY), (node2.posX, node2.posY))
+        # self.__tracking_animation(
+        #     (node1.posX, node1.posY), (node2.posX, node2.posY))
 
         # finally paint original edge
         self.__change_color_edge(edge, edge.path_tracking_color)
