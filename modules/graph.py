@@ -249,13 +249,6 @@ class Graph(object):
 
         while len(queue) > 0:
             current_node = dequeue()
-            # if current_node.value == initial_node.value:
-            if current_node.value == end_node.value:
-                self.__change_color_node(
-                    initial_node, Node.path_tracked_color)
-                self.__change_color_node(end_node, Node.path_tracked_color)
-                self.__paint_tracked_edges(current_node)
-                break
 
             for neighbor in current_node.neighbors:
                 if not hasattr(neighbor.node, 'visited') or neighbor.node.visited == False:
@@ -265,6 +258,15 @@ class Graph(object):
                         current_node, neighbor.node, neighbor.edge)
                     self.__paint_tracking_edges(
                         neighbor.edge, current_node, neighbor.node)
+
+                    # verificar se eh o node procurado
+                    if neighbor.node.value == end_node.value:
+                        self.__change_color_node(
+                            initial_node, Node.path_tracked_color)
+                        self.__change_color_node(
+                            end_node, Node.path_tracked_color)
+                        self.__paint_tracked_edges(neighbor.node)
+                        return
             if len(queue) == 0:
                 print('Impossivel ligar os dois nodes')
 
