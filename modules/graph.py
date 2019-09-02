@@ -164,7 +164,8 @@ class Graph(object):
                         self.__paint_tracked_edges(neighbor.node)
                         return
             if len(queue) == 0:
-                print('Impossivel ligar os dois nodes')
+                self.screen.set_warning('Impossivel ligar os dois Vertices')
+                return
 
     def __return_random_nodes(self, node, qtt_average, qtt_edges_remainder):
         '''
@@ -215,20 +216,20 @@ class Graph(object):
         self.edges = []
         print('generating graph #########################')
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
-        try:
-            if qtt_edges > max_edges:
-                print(qtt_edges, ' -> ', max_edges)
+        # try:
+        if qtt_edges > max_edges:
+            print(qtt_edges, ' -> ', max_edges)
 
-            values = []
-            nodes = []
-            for n in range(qtt_nodes):
-                values.append(n)
+        values = []
+        nodes = []
+        for n in range(qtt_nodes):
+            values.append(n)
 
-            nodes = self.create_nodes(values)
-            self.__automatic_generation_edges(nodes, qtt_edges)
+        nodes = self.create_nodes(values)
+        self.__automatic_generation_edges(nodes, qtt_edges)
 
-        except:
-            print('qtt edges is bigger than max edges possible')
+        # except:
+        #     print('qtt edges is bigger than max edges possible')
 
     def __test(self):
         print('test')
