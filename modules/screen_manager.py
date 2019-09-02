@@ -6,8 +6,8 @@ import time
 import random
 from math import cos, sin
 from modules.config import *
-from modules.screen_objects import Button, Input
-
+from modules.screen_objects import Button
+from modules.menu_screen import Menu
 
 
 class Screen(object):
@@ -19,11 +19,10 @@ class Screen(object):
         self.edges = []
         self.enqueue_nodes = []
         self.search_algorithm = None
-        self.input_number_nodes = None
-        self.input_number_edges = None
-        self.button_menu = None
-        self.keys_listener_selected = self.keys_listener_menu
-        self.draw_screen_selected = self.draw_menu
+        self.button = None
+        self.menu = None
+        self.keys_listener_selected = None
+        self.draw_screen_selected = None
         self.generate_graph = None
         self.text_warning = ''
 
@@ -32,14 +31,27 @@ class Screen(object):
         pygame.init()
         self.font = pygame.font.Font(
             'modules/fonts/roboto/Roboto-Black.ttf', 15)
-        self.input_number_nodes = Input(100, 100)
-        self.input_number_edges = Input(250, 100)
-        self.button_menu = Button('OK', 350, 100)
         self.generate_graph = generate_graph
+        self.menu = Menu(self.screen, self, self.clock)
+        self.switch_to_menu()
+        # self.switch_to_graph()
+        
+
+    def switch_to_menu(self):
+        self.keys_listener_selected = self.menu.keys_listener
+        self.draw_screen_selected = self.menu.draw
+
+    def switch_to_graph(self, qtt_nodes = 10, qtt_edges = 10):
+        self.nodes = []
+        self.edges = []
+        self.generate_graph(qtt_nodes, qtt_edges)
+        self.keys_listener_selected = self.keys_listener
+        self.draw_screen_selected = self.draw
+        self.button = Button('Menu', 20, SCREEN_HEIGHT - 50)
 
     def set_search_algorithm(self, search_algorithm):
         self.search_algorithm = search_algorithm
-        
+
     def create_node(self, node):
 
         self.nodes.append(node)
@@ -91,7 +103,8 @@ class Screen(object):
         psy = position[1]
         for node in self.nodes:
             radius = NODE_RADIUS
-            if (psx > node.posX - radius and psx < node.posX + radius and psy > node.posY - radius and psy < node.posY + radius):
+            if (psx > node.posX - radius and psx < node.posX + radius and
+                psy > node.posY - radius and psy < node.posY + radius):
                 return node
         return None
 
@@ -104,105 +117,6 @@ class Screen(object):
         node.posX += change_posX
         node.posY += change_posY
 
-    def draw_menu(self, clock_fps=30):
-        # redraw screen
-        self.screen.fill(LIGHT_GRAY)
-        # Draw Input box
-        self.input_number_nodes.draw(self.screen)
-        self.input_number_edges.draw(self.screen)
-
-        # Draw Button
-        self.button_menu.draw(self.screen)
-
-        # render labels
-        label = self.font.render("N° Nodes:", True, BLACK)
-        self.screen.blit(label, (self.input_number_nodes.box.left -
-                                 70, self.input_number_nodes.box.top))
-
-        label = self.font.render("N° Edges:", True, BLACK)
-        self.screen.blit(label, (self.input_number_edges.box.left -
-                                 70, self.input_number_edges.box.top))
-
-        # render warning
-        label_warning = self.font.render(self.text_warning, True, RED)
-        self.screen.blit(label_warning,
-                         (SCREEN_WIDTH / 4, SCREEN_HEIGHT - 100))
-
-        pygame.display.flip()
-        self.clock.tick(clock_fps)
-
-    def switch_to_graph(self):
-        self.nodes = []
-        self.edges = []
-        self.generate_graph(int(self.input_number_nodes.text), int(
-            self.input_number_edges.text))
-        self.keys_listener_selected = self.keys_listener
-        self.draw_screen_selected = self.draw
-        self.button_menu.text = 'MENU'
-        self.button_menu.set_pos(20, SCREEN_HEIGHT - 50)
-
-    def switch_to_menu(self):
-        self.keys_listener_selected = self.keys_listener_menu
-        self.draw_screen_selected = self.draw_menu
-        self.button_menu.text = 'OK'
-        self.button_menu.set_pos(350, 100)
-
-    def keys_listener_menu(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # if clicked on input_number_nodes
-                if self.input_number_nodes.box.collidepoint(event.pos):
-                    self.input_number_nodes.clicked()
-                else:
-                    self.input_number_nodes.active = False
-                self.input_number_nodes.switch_status(event)
-
-                # if clicked on input_number_edges
-                if self.input_number_edges.box.collidepoint(event.pos):
-                    self.input_number_edges.clicked()
-                else:
-                    self.input_number_edges.active = False
-                self.input_number_edges.switch_status(event)
-
-                # if clicked on Button Confirm
-                if self.button_menu.box.collidepoint(event.pos):
-                    self.button_menu.clicked()
-                    # init screen graph
-                    try:
-                        qtt_nodes = int(self.input_number_nodes.text)
-                        qtt_edges = int(self.input_number_edges.text)
-                        max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
-                        print(qtt_nodes, ' + ', qtt_edges)
-
-                        if self.input_number_nodes.text == '' or self.input_number_edges.text == '':
-                            self.text_warning = "Digite o Numero de Nodes e Arestas!"
-                        # elif qtt_nodes > qtt_edges:
-                        #     self.text_warning = "Numero de Arestas deve ser maior do que o de Nodes!"
-                        elif qtt_edges > max_edges:
-                            self.text_warning = "Numero de Arestas maior do que o maximo possivel!"
-                        else:
-                            self.switch_to_graph()
-                    except:
-                        self.text_warning = "Digite Valores Validos!"
-                else:
-                    self.button_menu.active = False
-                self.button_menu.switch_status(event)
-
-            if event.type == pygame.KEYDOWN:
-                # typing on input_number_nodes
-                if self.input_number_nodes.active:
-                    if event.key == pygame.K_RETURN:
-                        self.input_number_nodes.text = ''
-                    self.input_number_nodes.typing(event)
-
-                # typing on input_number_edges
-                if self.input_number_edges.active:
-                    if event.key == pygame.K_RETURN:
-                        self.input_number_edges.text = ''
-                    self.input_number_edges.typing(event)
 
     def draw(self, clock_fps=30):
         # redraw screen
@@ -210,14 +124,15 @@ class Screen(object):
         # Draw edges
         for edge in self.edges:
             pygame.draw.line(
-                self.screen, edge.color, (edge.node_start.posX, edge.node_start.posY), (edge.node_end.posX, edge.node_end.posY), 3)
+                self.screen, edge.color, (edge.node_start.posX,
+                    edge.node_start.posY), (edge.node_end.posX, edge.node_end.posY), 3)
         # Draw Nodes
         for node in self.nodes:
             pygame.gfxdraw.filled_circle(
                 self.screen, node.posX, node.posY, NODE_RADIUS, node.color)
 
-        # Draw Button Menu
-        self.button_menu.draw(self.screen)
+        # Draw Button
+        self.button.draw(self.screen)
 
         # pygame.display.update()
         pygame.display.flip()
@@ -238,7 +153,7 @@ class Screen(object):
                     # clicked on left button to drag node
                     position = pygame.mouse.get_pos()
                     node = self.selected_node(position)
-                    if node != None:
+                    if node is not None:
                         rel = event.rel
                         self.change_node_pos(node, rel[0], rel[1])
 
@@ -246,13 +161,13 @@ class Screen(object):
                 # if left button is clicked
                 position = pygame.mouse.get_pos()
                 node = self.selected_node(position)
-                if node != None:
+                if node is not None:
                     self.cache_enqueue_selected_nodes(node)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # if clicked on Button Menu
-                if self.button_menu.box.collidepoint(event.pos):
-                    self.button_menu.clicked()
+                if self.button.box.collidepoint(event.pos):
+                    self.button.clicked()
                     self.switch_to_menu()
 
     def refresh(self):
