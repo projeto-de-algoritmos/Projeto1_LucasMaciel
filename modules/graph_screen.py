@@ -19,8 +19,9 @@ class GraphScreen(object):
         self.nodes = []
         self.edges = []
         self.enqueue_nodes = []
-        self.search_algorithm = None
+        self.search_algorithm1 = None
         self.search_algorithm2 = None
+        self.search_algorithm_current = None
         self.generate_graph = None
 
         # objects
@@ -42,9 +43,13 @@ class GraphScreen(object):
     def set_generate_graph(self, generate_graph):
         self.generate_graph = generate_graph
 
-    def set_search_algorithm(self, search_algorithm=None, search_algorithm2=None):
-        self.search_algorithm = search_algorithm
+    def set_search_algorithm(self, search_algorithm1=None, search_algorithm2=None):
+        self.search_algorithm1 = search_algorithm1
         self.search_algorithm2 = search_algorithm2
+        self.search_algorithm_current = search_algorithm1
+
+    def set_search_algorithm_current(self, search_algorithm):
+        self.search_algorithm_current = search_algorithm
 
     def draw(self, clock_fps=30):
         # redraw screen
@@ -111,7 +116,8 @@ class GraphScreen(object):
                         self.button_current_search = self.button_type_bfs
 
                         # set search algorithm
-                        self.set_search_algorithm(self.search_algorithm)
+                        self.set_search_algorithm_current(
+                            self.search_algorithm1)
 
                 if self.button_type_dfs.box.collidepoint(event.pos):
                     if self.button_type_dfs.active is False:
@@ -120,7 +126,8 @@ class GraphScreen(object):
                         self.button_current_search = self.button_type_dfs
 
                         # set search algorithm
-                        self.set_search_algorithm(self.search_algorithm2)
+                        self.set_search_algorithm_current(
+                            self.search_algorithm2)
 
     def create_node(self, node):
 
@@ -165,7 +172,7 @@ class GraphScreen(object):
             print(node.value, end=", ")
         print()
         if len(self.enqueue_nodes) >= 2:
-            self.search_algorithm(
+            self.search_algorithm_current(
                 self.enqueue_nodes[0], self.enqueue_nodes[1])
             self.enqueue_nodes = []
 
