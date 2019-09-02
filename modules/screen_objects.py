@@ -1,6 +1,7 @@
 import pygame
 import pygame.gfxdraw
 
+
 class Button(object):
     def __init__(self, text, posX=100, posY=100, width=50, height=30):
         self.width = width
@@ -33,9 +34,9 @@ class Button(object):
 
     def clicked(self):
         self.active = not self.active
+        self.switch_status()
 
-    def switch_status(self, event):
-        # Change the current color of the input box.
+    def switch_status(self):
         self.color = self.color_active if self.active else self.color_inactive
 
 

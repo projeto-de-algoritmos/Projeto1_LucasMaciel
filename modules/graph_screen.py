@@ -6,28 +6,39 @@ from math import cos, sin
 from modules.config import *
 from modules.screen_objects import Button
 
+
 class GraphScreen(object):
     def __init__(self, screen, screen_manager, clock):
         self.screen = screen
         self.screen_manager = screen_manager
         self.clock = clock
+        self.font = pygame.font.Font(
+            'modules/fonts/roboto/Roboto-Black.ttf', 15)
+
+        # graph
         self.nodes = []
         self.edges = []
         self.enqueue_nodes = []
         self.search_algorithm = None
         self.generate_graph = None
-        self.button = Button('Menu', 20, SCREEN_HEIGHT - 50)
-        self.font = pygame.font.Font('modules/fonts/roboto/Roboto-Black.ttf', 15)
+
+        # objects
         self.text_warning = ''
+        self.button_menu = Button('Menu', 20, SCREEN_HEIGHT - 50)
+        self.button_type_bfs = Button(
+            'BFS', SCREEN_WIDTH - 120, SCREEN_HEIGHT - 50)
+        self.button_type_dfs = Button(
+            'DFS', SCREEN_WIDTH - 60, SCREEN_HEIGHT - 50)
 
     def start(self, qtt_nodes, qtt_edges):
         self.nodes = []
         self.edges = []
+        self.button_type_bfs.clicked()
         self.generate_graph(qtt_nodes, qtt_edges)
 
     def set_generate_graph(self, generate_graph):
         self.generate_graph = generate_graph
-    
+
     def set_search_algorithm(self, search_algorithm):
         self.search_algorithm = search_algorithm
 
@@ -38,14 +49,16 @@ class GraphScreen(object):
         for edge in self.edges:
             pygame.draw.line(
                 self.screen, edge.color, (edge.node_start.posX,
-                    edge.node_start.posY), (edge.node_end.posX, edge.node_end.posY), 3)
+                                          edge.node_start.posY), (edge.node_end.posX, edge.node_end.posY), 3)
         # Draw Nodes
         for node in self.nodes:
             pygame.gfxdraw.filled_circle(
                 self.screen, node.posX, node.posY, NODE_RADIUS, node.color)
 
-        # Draw Button
-        self.button.draw(self.screen)
+        # Draw Buttons
+        self.button_menu.draw(self.screen)
+        self.button_type_bfs.draw(self.screen)
+        self.button_type_dfs.draw(self.screen)
 
         # render warning
         label_warning = self.font.render(self.text_warning, True, RED)
@@ -83,8 +96,8 @@ class GraphScreen(object):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # if clicked on Button Menu
-                if self.button.box.collidepoint(event.pos):
-                    self.button.clicked()
+                if self.button_menu.box.collidepoint(event.pos):
+                    self.button_menu.clicked()
                     self.screen_manager.switch_to_menu()
 
     def create_node(self, node):
@@ -140,7 +153,7 @@ class GraphScreen(object):
         for node in self.nodes:
             radius = NODE_RADIUS
             if (psx > node.posX - radius and psx < node.posX + radius and
-                psy > node.posY - radius and psy < node.posY + radius):
+                    psy > node.posY - radius and psy < node.posY + radius):
                 return node
         return None
 

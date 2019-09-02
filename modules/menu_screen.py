@@ -2,6 +2,7 @@ import pygame
 from modules.config import *
 from modules.screen_objects import Button, Input
 
+
 class Menu(object):
     def __init__(self, screen, screen_manager, clock):
         self.screen = screen
@@ -52,35 +53,35 @@ class Menu(object):
                     self.input_number_nodes.clicked()
                 else:
                     self.input_number_nodes.active = False
-                self.input_number_nodes.switch_status(event)
 
                 # if clicked on input_number_edges
                 if self.input_number_edges.box.collidepoint(event.pos):
                     self.input_number_edges.clicked()
                 else:
                     self.input_number_edges.active = False
-                self.input_number_edges.switch_status(event)
 
                 # if clicked on Button Confirm
                 if self.button.box.collidepoint(event.pos):
+                    self.text_warning = ''
                     self.button.clicked()
-                    
+
                     # Confirm qtt_nodes and qtt_edges
                     try:
                         qtt_nodes = int(self.input_number_nodes.text)
                         qtt_edges = int(self.input_number_edges.text)
-                        max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
-                        print(qtt_nodes, ' + ', qtt_edges)
-
-                        if qtt_edges > max_edges:
-                            self.text_warning = "Numero de Arestas maior do que o maximo possivel!"
-                        else:
-                            self.screen_manager.switch_to_graph(qtt_nodes, qtt_edges)
                     except:
                         self.text_warning = "Digite Valores Validos!"
+                        return
+
+                    max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
+
+                    if qtt_edges > max_edges:
+                        self.text_warning = "Numero de Arestas maior do que o maximo possivel!"
+                    else:
+                        self.screen_manager.switch_to_graph(
+                            qtt_nodes, qtt_edges)
                 else:
                     self.button.active = False
-                self.button.switch_status(event)
 
             if event.type == pygame.KEYDOWN:
                 # typing on input_number_nodes
