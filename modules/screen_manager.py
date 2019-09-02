@@ -6,64 +6,8 @@ import time
 import random
 from math import cos, sin
 from modules.config import *
+from modules.screen_objects import Button, Input
 
-
-class Button(object):
-    def __init__(self, text, posX=100, posY=100, width=50, height=30):
-        self.width = width
-        self.height = height
-        self.posX = posX
-        self.posY = posY
-        self.box = pygame.Rect(self.posX, self.posY, self.width, self.height)
-        self.font = pygame.font.Font(None, 32)
-        self.color_inactive = pygame.Color('lightskyblue3')
-        self.color_active = pygame.Color('dodgerblue2')
-        self.color = self.color_inactive
-        self.active = False
-        self.text = text
-        self.done = False
-
-    def set_pos(self, posX, posY):
-        self.posX = posX
-        self.posY = posY
-        self.box = pygame.Rect(self.posX, self.posY, self.width, self.height)
-
-    def draw(self, screen):
-        txt_surface = self.font.render(
-            self.text, True, self.color)
-        width = max(self.width, txt_surface.get_width()+10)
-        self.box.w = width
-        screen.blit(txt_surface, (self.box.x +
-                                  5, self.box.y+5))
-        pygame.draw.rect(screen, self.color,
-                         self.box, 2)
-
-    def clicked(self):
-        self.active = not self.active
-
-    def switch_status(self, event):
-        # Change the current color of the input box.
-        self.color = self.color_active if self.active else self.color_inactive
-
-
-class Input(Button):
-    def __init__(self, posX=100, posY=100, width=50, height=30):
-        self.width = width
-        self.height = height
-        self.box = pygame.Rect(posX, posY, self.width, self.height)
-        self.font = pygame.font.Font(None, 32)
-        self.color_inactive = pygame.Color('lightskyblue3')
-        self.color_active = pygame.Color('dodgerblue2')
-        self.color = self.color_inactive
-        self.active = False
-        self.text = ''
-        self.done = False
-
-    def typing(self, event):
-        if event.key == pygame.K_BACKSPACE:
-            self.text = self.text[:-1]
-        else:
-            self.text += event.unicode
 
 
 class Screen(object):
@@ -74,7 +18,7 @@ class Screen(object):
         self.nodes = []
         self.edges = []
         self.enqueue_nodes = []
-        self.selected_search_node = None
+        self.search_algorithm = None
         self.input_number_nodes = None
         self.input_number_edges = None
         self.button_menu = None
@@ -93,6 +37,9 @@ class Screen(object):
         self.button_menu = Button('OK', 350, 100)
         self.generate_graph = generate_graph
 
+    def set_search_algorithm(self, search_algorithm):
+        self.search_algorithm = search_algorithm
+        
     def create_node(self, node):
 
         self.nodes.append(node)
@@ -135,7 +82,7 @@ class Screen(object):
             print(node.value, end=", ")
         print()
         if len(self.enqueue_nodes) >= 2:
-            self.selected_search_node(
+            self.search_algorithm(
                 self.enqueue_nodes[0], self.enqueue_nodes[1])
             self.enqueue_nodes = []
 
@@ -232,8 +179,8 @@ class Screen(object):
 
                         if self.input_number_nodes.text == '' or self.input_number_edges.text == '':
                             self.text_warning = "Digite o Numero de Nodes e Arestas!"
-                        elif qtt_nodes > qtt_edges:
-                            self.text_warning = "Numero de Arestas deve ser maior do que o de Nodes!"
+                        # elif qtt_nodes > qtt_edges:
+                        #     self.text_warning = "Numero de Arestas deve ser maior do que o de Nodes!"
                         elif qtt_edges > max_edges:
                             self.text_warning = "Numero de Arestas maior do que o maximo possivel!"
                         else:

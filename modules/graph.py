@@ -1,66 +1,8 @@
 from copy import deepcopy
 import random
 from modules.config import *
-
-
-colors = [RED]
-
-
-class Edge(object):
-    index = 0
-    no_path_tracking_color = DARK_GRAY
-    path_tracking_color = LIGHT_BLUE
-    path_tracked_color = YELLOW
-
-    def __init__(self):
-        self.node_start: Node
-        self.node_end: Node
-        self.color = Edge.no_path_tracking_color
-        self.value = Edge.index
-        Edge.index += 1
-
-
-class Node(object):
-    indexes_used = []
-    path_tracking_color = LIGHT_BLUE
-    path_tracked_color = GREEN
-    path_tracked_middle_color = YELLOW
-
-    def __init__(self, value):
-        try:
-            if value in self.indexes_used:
-                raise AttributeError
-            self.value = value
-            Node.indexes_used.append(value)
-        except AttributeError:
-            print('value node (%d) already used' % (value))
-            exit()
-        self.neighbors = []
-        self.color = None
-        self.__original_color = None
-        self.posX = None
-        self.posY = None
-
-    @property
-    def original_color(self):
-        return self.__original_color
-
-    @original_color.setter
-    def original_color(self, new_color):
-        self.__original_color = new_color
-        self.color = self.__original_color
-
-    def add_neighbor(self, node, edge):
-        neighbor = type('', (), {})()
-        neighbor.node = node
-        neighbor.edge = edge
-        self.neighbors.append(neighbor)
-
-    def get_value_neighbors(self):
-        values = []
-        for neighbor in self.neighbors:
-            values.append(neighbor.value)
-        return values
+from modules.node import Node
+from modules.edge import Edge
 
 
 class Graph(object):
@@ -106,9 +48,9 @@ class Graph(object):
 
     def make_nodes_screen(self, nodes: list):
         for node in nodes:
-            node.original_color = colors[random.randint(0, len(colors) - 1)]
+            node.original_color = RED
             node.posX, node.posY = self.__set_positions()
-            node_aux = self.screen.create_node(node)
+            self.screen.create_node(node)
 
     def create_relationship(self, node, nodes: list):
         neighbors = nodes
@@ -165,55 +107,10 @@ class Graph(object):
         self.screen.add_edge(edge)
         return edge
 
-    def __tracking_animation(self, start, end):
-        def increase_pos(prev_pos, increase): return prev_pos + increase
-        def decrease_pos(prev_pos, decrease): return prev_pos - decrease
-        # percent of original edge
-        percent_original_edge = 0.05
-        size_temp_edge = 0
-        temp_edge_start = start
-        temp_edge_end = temp_edge_start
-        size_increment_x = abs(
-            end[0] - start[0]) * percent_original_edge
-        size_increment_y = abs(
-            end[1] - start[1]) * percent_original_edge
-
-        increment_posX = None
-        increment_posY = None
-        if end[0] > start[0]:
-            increment_posX = increase_pos
-        else:
-            increment_posX = decrease_pos
-
-        if end[1] > start[1]:
-            increment_posY = increase_pos
-        else:
-            increment_posY = decrease_pos
-
-        temp_edge = self.__make_temp_edge_screen(
-            temp_edge_start, temp_edge_end, Edge.path_tracking_color)
-        # print('edge start original: ', edge.start)
-        # print('edge end original: ', edge.end)
-        # print('edge start temp: ', temp_edge_start)
-        while(abs(end[0] - temp_edge_end[0]) > size_increment_x
-                and abs(end[1] - temp_edge_end[1]) > size_increment_y):
-
-            temp_edge_end = (increment_posX(temp_edge_end[0], size_increment_x),
-                             increment_posY(temp_edge_end[1], size_increment_y))
-            temp_edge.end = temp_edge_end
-            self.screen.draw(16)
-            # print('edge end temp: ', temp_edge_end)
-        self.screen.remove_edge()
-        del temp_edge
-
     def __paint_tracking_edges(self, edge, node1, node2):
         '''
             Pintar o caminho de busca do node
         '''
-        # self.__tracking_animation(
-        #     (node1.posX, node1.posY), (node2.posX, node2.posY))
-
-        # finally paint original edge
         self.__change_color_edge(edge, edge.path_tracking_color)
         self.__change_color_node(node2, node2.path_tracking_color)
         self.screen.draw(3)
@@ -229,7 +126,6 @@ class Graph(object):
 
     def breadth_search(self, initial_node: Node, end_node: Node):
         queue = []
-        distance = 0
 
         def enqueue(node):
             node.visited = True
@@ -322,7 +218,6 @@ class Graph(object):
         try:
             if qtt_edges > max_edges:
                 print(qtt_edges, ' -> ', max_edges)
-                # raise max_edges
 
             values = []
             nodes = []
@@ -332,7 +227,7 @@ class Graph(object):
             nodes = self.create_nodes(values)
             self.__automatic_generation_edges(nodes, qtt_edges)
 
-        except max_edges:
+        except:
             print('qtt edges is bigger than max edges possible')
 
     def __test(self):
