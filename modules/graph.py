@@ -120,7 +120,7 @@ class Graph(object):
             arvore temporaria para salvar o melhor caminho do initial_node para end_node
         '''
         parent_node.childs.append(child_node)
-        # child_node.parent = parent_node
+
         child_node.parent.edge = edge
         child_node.parent.node = parent_node
 
@@ -149,11 +149,12 @@ class Graph(object):
             for neighbor in current_node.neighbors:
                 if not hasattr(neighbor.node, 'visited') or neighbor.node.visited == False:
                     enqueue(neighbor.node)
+                    # desenha caminho de busca
+                    self.__paint_tracking_edges(
+                        neighbor.edge, current_node, neighbor.node)
                     # adiciona nodes vizinhos como filhos do node da camada anterior
                     self.__add_child_tree(
                         current_node, neighbor.node, neighbor.edge)
-                    self.__paint_tracking_edges(
-                        neighbor.edge, current_node, neighbor.node)
 
                     # verificar se eh o node procurado
                     if neighbor.node.value == end_node.value:
@@ -167,6 +168,50 @@ class Graph(object):
                 self.screen.set_warning('Impossivel ligar os dois Vertices')
                 return
 
+    def depth_first_search(self, initial_node: Node, end_node: Node):
+        '''
+            Funcao auxiliar a depth first recursion, para desenhar o caminho original
+        '''
+        result = self.depth_first_search_recursion(initial_node, end_node)
+        if result != None:
+            self.__change_color_node(
+                initial_node, Node.path_tracked_color)
+            self.__change_color_node(
+                end_node, Node.path_tracked_color)
+            self.__paint_tracked_edges(result)
+        else:
+            self.screen.set_warning('Impossivel ligar os dois Vertices')
+        return
+
+    def depth_first_search_recursion(self, initial_node: Node, end_node: Node):
+        node = deepcopy(initial_node)
+
+        node.visited = True
+        node.parent = type('', (), {})()
+        node.childs = []
+
+        for neighbor in node.neighbors:
+            neighbor.node.parent = type('', (), {})()
+            neighbor.node.childs = []
+            if not hasattr(neighbor.node, 'visited') or neighbor.node.visited == False:
+                neighbor.node.visited = True
+                # desenha caminho de busca
+                self.__paint_tracking_edges(
+                    neighbor.edge, node, neighbor.node)
+                # arvore de busca
+                self.__add_child_tree(
+                    node, neighbor.node, neighbor.edge)
+
+                # verificar se eh o node procurado
+                if neighbor.node.value == end_node.value:
+                    # retorna o node procurado com a arvore
+                    return neighbor.node
+
+                result = self.depth_first_search_recursion(
+                    neighbor.node, end_node)
+                if result != None:
+                    return result
+
     def __return_random_nodes(self, node, qtt_average, qtt_edges_remainder):
         '''
             Retorna uma lista de nodes aleatoriamente
@@ -179,7 +224,6 @@ class Graph(object):
         size_list = random.randint(0, qtt_average)
         array_nodes = []
 
-        print(node.value, ' -> [', end='')
         # neighbors already exists
         neighbor_already = []
         for neighbor in node.neighbors:
@@ -194,9 +238,7 @@ class Graph(object):
                         node_picked not in neighbor_already):
                     break
 
-            print(node_picked.value, ', ', end='')
             array_nodes.append(node_picked)
-        print(']')
         return array_nodes
 
     def __automatic_generation_edges(self, nodes: list, qtt_edges):
@@ -219,11 +261,7 @@ class Graph(object):
         del self.edges
         self.nodes = []
         self.edges = []
-        print('generating graph #########################')
         max_edges = int((qtt_nodes*(qtt_nodes - 1)) / 2)
-
-        if qtt_edges > max_edges:
-            print(qtt_edges, ' -> ', max_edges)
 
         values = []
         nodes = []
@@ -232,6 +270,3 @@ class Graph(object):
 
         nodes = self.create_nodes(values)
         self.__automatic_generation_edges(nodes, qtt_edges)
-
-    def __test(self):
-        print('test')

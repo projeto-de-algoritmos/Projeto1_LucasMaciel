@@ -23,7 +23,7 @@ class Screen(object):
         pygame.init()
         self.font = pygame.font.Font(
             'modules/fonts/roboto/Roboto-Black.ttf', 15)
-    
+
         # init programm with menu screen
         self.switch_to_menu()
 
@@ -33,14 +33,16 @@ class Screen(object):
         self.keys_listener_selected = self.menu.keys_listener
         self.draw_screen_selected = self.menu.draw
 
-    def switch_to_graph(self, qtt_nodes = 10, qtt_edges = 10):
+    def switch_to_graph(self, qtt_nodes=10, qtt_edges=10):
         del self.graph
         del self.graph_screen
 
         self.graph_screen = GraphScreen(self.screen, self, self.clock)
         self.graph = Graph(self.graph_screen)
-        self.graph_screen.set_generate_graph(self.graph.automatic_generation_graph)
-        self.graph_screen.set_search_algorithm(self.graph.breadth_search)
+        self.graph_screen.set_generate_graph(
+            self.graph.automatic_generation_graph)
+        self.graph_screen.set_search_algorithm(
+            self.graph.breadth_search, self.graph.depth_first_search)
 
         self.graph_screen.start(qtt_nodes, qtt_edges)
         self.keys_listener_selected = self.graph_screen.keys_listener

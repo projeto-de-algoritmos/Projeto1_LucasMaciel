@@ -20,6 +20,7 @@ class GraphScreen(object):
         self.edges = []
         self.enqueue_nodes = []
         self.search_algorithm = None
+        self.search_algorithm2 = None
         self.generate_graph = None
 
         # objects
@@ -29,18 +30,21 @@ class GraphScreen(object):
             'BFS', SCREEN_WIDTH - 120, SCREEN_HEIGHT - 50)
         self.button_type_dfs = Button(
             'DFS', SCREEN_WIDTH - 60, SCREEN_HEIGHT - 50)
+        self.button_current_search = None
 
     def start(self, qtt_nodes, qtt_edges):
         self.nodes = []
         self.edges = []
         self.button_type_bfs.clicked()
+        self.button_current_search = self.button_type_bfs
         self.generate_graph(qtt_nodes, qtt_edges)
 
     def set_generate_graph(self, generate_graph):
         self.generate_graph = generate_graph
 
-    def set_search_algorithm(self, search_algorithm):
+    def set_search_algorithm(self, search_algorithm=None, search_algorithm2=None):
         self.search_algorithm = search_algorithm
+        self.search_algorithm2 = search_algorithm2
 
     def draw(self, clock_fps=30):
         # redraw screen
@@ -88,7 +92,7 @@ class GraphScreen(object):
                         self.change_node_pos(node, rel[0], rel[1])
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                # if left button is clicked
+                # if left button is clicked on node
                 position = pygame.mouse.get_pos()
                 node = self.selected_node(position)
                 if node is not None:
@@ -99,6 +103,24 @@ class GraphScreen(object):
                 if self.button_menu.box.collidepoint(event.pos):
                     self.button_menu.clicked()
                     self.screen_manager.switch_to_menu()
+
+                if self.button_type_bfs.box.collidepoint(event.pos):
+                    if self.button_type_bfs.active is False:
+                        self.button_type_bfs.clicked()
+                        self.button_current_search.clicked()
+                        self.button_current_search = self.button_type_bfs
+
+                        # set search algorithm
+                        self.set_search_algorithm(self.search_algorithm)
+
+                if self.button_type_dfs.box.collidepoint(event.pos):
+                    if self.button_type_dfs.active is False:
+                        self.button_type_dfs.clicked()
+                        self.button_current_search.clicked()
+                        self.button_current_search = self.button_type_dfs
+
+                        # set search algorithm
+                        self.set_search_algorithm(self.search_algorithm2)
 
     def create_node(self, node):
 
