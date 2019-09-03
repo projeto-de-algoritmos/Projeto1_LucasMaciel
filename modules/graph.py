@@ -48,7 +48,7 @@ class Graph(object):
 
     def make_nodes_screen(self, nodes: list):
         for node in nodes:
-            node.original_color = RED
+            node.original_color = DARK_GRAY
             node.posX, node.posY = self.__set_positions()
             self.screen.create_node(node)
 
@@ -107,12 +107,14 @@ class Graph(object):
         self.screen.add_edge(edge)
         return edge
 
-    def __paint_tracking_edges(self, edge, node1, node2):
+    def __paint_tracking_edges(self, edge, node1, node2, color_index=0):
         '''
             Pintar o caminho de busca do node
         '''
-        self.__change_color_edge(edge, edge.path_tracking_color)
-        self.__change_color_node(node2, node2.path_tracking_color)
+        color = [(edge.path_tracking_color, node2.path_tracking_color),
+                 (edge.path_tracked_color, node2.path_tracked_middle_color)]
+        self.__change_color_edge(edge, color[color_index][0])
+        self.__change_color_node(node2, color[color_index][1])
         self.screen.draw(3)
 
     def __add_child_tree(self, parent_node, child_node, edge):
@@ -178,7 +180,6 @@ class Graph(object):
                 initial_node, Node.path_tracked_color)
             self.__change_color_node(
                 end_node, Node.path_tracked_color)
-            self.__paint_tracked_edges(result)
         else:
             self.screen.set_warning('Impossivel ligar os dois Vertices')
         return
@@ -197,7 +198,7 @@ class Graph(object):
                 neighbor.node.visited = True
                 # desenha caminho de busca
                 self.__paint_tracking_edges(
-                    neighbor.edge, node, neighbor.node)
+                    neighbor.edge, node, neighbor.node, 1)
                 # arvore de busca
                 self.__add_child_tree(
                     node, neighbor.node, neighbor.edge)
@@ -205,12 +206,18 @@ class Graph(object):
                 # verificar se eh o node procurado
                 if neighbor.node.value == end_node.value:
                     # retorna o node procurado com a arvore
-                    return neighbor.node
+                    return node
 
                 result = self.depth_first_search_recursion(
                     neighbor.node, end_node)
+
                 if result != None:
-                    return result
+                    node = result
+                    return node
+                else:
+                    self.__paint_tracking_edges(
+                        neighbor.edge, node, neighbor.node, 0)
+        initial_node = node
 
     def __return_random_nodes(self, node, qtt_average, qtt_edges_remainder):
         '''

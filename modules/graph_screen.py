@@ -143,7 +143,7 @@ class GraphScreen(object):
         # remove an edge
         self.edges.pop()
 
-    def paint_node_selected(self, node, color=YELLOW):
+    def paint_node_selected(self, node, color=RED):
         node.color = color
 
     def clear_path(self):
